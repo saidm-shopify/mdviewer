@@ -593,6 +593,19 @@ body.dragging-file::after {
   position: relative;
 }
 
+.doc-card-filename {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  opacity: 0.6;
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;

@@ -82,6 +82,7 @@ const DocumentsDB = {
         title,
         content: data.content || "",
         slug,
+        fileName: data.fileName || null,
         ownerEmail: this._userEmail,
         owner: data.owner || null,
         lastEditedBy: data.owner
@@ -157,6 +158,16 @@ const DocumentsDB = {
     } catch (error) {
       console.error("Error searching documents:", error);
       return [];
+    }
+  },
+
+  async getByFileName(fileName) {
+    try {
+      const docs = await this.getAll();
+      return docs.find((d) => d.fileName === fileName) || null;
+    } catch (error) {
+      console.error("Error fetching document by filename:", error);
+      return null;
     }
   },
 

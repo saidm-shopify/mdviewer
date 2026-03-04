@@ -212,6 +212,7 @@ async function loadDocumentsList(query = "") {
             <span>${date}</span>
             <span>${escapeHtml(doc.owner?.fullName || "")}</span>
           </div>
+          ${doc.fileName ? `<div class="doc-card-filename">${escapeHtml(doc.fileName)}</div>` : ""}
         </div>
       `;
     })
@@ -651,9 +652,31 @@ async function handleFileUpload(files) {
         DocumentsDB._extractTitle(content) ||
         file.name.replace(/\.(md|markdown|txt)$/, "");
 
+      // Check for duplicate filename
+      const existing = await DocumentsDB.getByFileName(file.name);
+      if (existing) {
+        const overwrite = confirm(`"${file.name}" already exists. Overwrite it?`);
+        if (!overwrite) {
+          showToast(`Skipped "${file.name}"`);
+          continue;
+        }
+        // Update existing document
+        await DocumentsDB.update(existing.id, {
+          title,
+          content,
+          fileName: file.name,
+          lastEditedBy: currentUser
+            ? { email: currentUser.email, fullName: currentUser.fullName, timestamp: new Date().toISOString() }
+            : null,
+        });
+        importedCount++;
+        continue;
+      }
+
       await DocumentsDB.create({
         title,
         content,
+        fileName: file.name,
         owner: currentUser
           ? {
               email: currentUser.email,
