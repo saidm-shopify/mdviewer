@@ -88,7 +88,7 @@ async function renderHomePage() {
 
   toolbar.innerHTML = `
     <div class="toolbar-left">
-      <h1 class="toolbar-title">Markdown Viewer</h1>
+      <h1 class="toolbar-title">🧠 MarkdownMind</h1>
     </div>
     <div class="toolbar-right">
       <button id="btn-new" class="btn-primary">+ New Document</button>
