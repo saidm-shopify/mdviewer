@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A collaborative Markdown viewer and editor with AI-powered Q&A.">
+    <title>Markdown Viewer</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128196;</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- GitHub Markdown CSS (both themes, toggled via data-theme) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-dark.min.css" id="md-css-dark">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css" id="md-css-light" disabled>
+
+    <!-- Highlight.js themes (toggled via JS) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github-dark.min.css" id="hljs-dark">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css" id="hljs-light" disabled>
+
+    <!-- App styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Quick platform (must be sync -- other scripts depend on it) -->
+    <script src="/client/quick.js"></script>
+
+    <!-- Libraries (defer to avoid render-blocking) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/pako@2/dist/pako.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <!-- Skip to content (accessibility) -->
+    <a href="#main-content" class="sr-only sr-only-focusable">Skip to content</a>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display:none" role="status" aria-label="Loading">
+        <div class="loading-spinner" aria-hidden="true"></div>
+    </div>
+
+    <!-- App shell -->
+    <div id="app" class="app">
+        <header id="toolbar" class="toolbar">
+            <!-- Toolbar content rendered by JS -->
+        </header>
+        <main id="main-content" class="main-content">
+            <!-- Page content rendered by JS -->
+        </main>
+    </div>
+
+    <!-- Scripts (order matters -- defer maintains order) -->
+    <script defer src="quick-db-fallback.js"></script>
+    <script defer src="database.js"></script>
+    <script defer src="markdown-renderer.js"></script>
+    <script defer src="editor.js"></script>
+    <script defer src="comments.js"></script>
+    <script defer src="chat.js"></script>
+    <script defer src="app.js"></script>
+</body>
+</html>
