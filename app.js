@@ -471,6 +471,21 @@ async function renderDocContent(doc) {
     previewContainer.innerHTML = MarkdownRenderer.render(doc.content || "");
     await MarkdownRenderer.postRender(previewContainer);
 
+    // Intercept anchor links for in-document navigation
+    previewContainer.addEventListener("click", (e) => {
+      const link = e.target.closest("a[href]");
+      if (!link) return;
+      const href = link.getAttribute("href");
+      if (href && href.startsWith("#") && !href.startsWith("#/")) {
+        e.preventDefault();
+        const targetId = href.substring(1);
+        const target = previewContainer.querySelector(`#${CSS.escape(targetId)}`);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    });
+
     // Init zoom
     initPreviewZoom();
 

@@ -18,6 +18,20 @@ const MarkdownRenderer = {
     // Custom renderer for diagram support
     const renderer = new marked.Renderer();
 
+    // Generate heading IDs for anchor navigation (matches GFM slug format)
+    renderer.heading = function (headingObj) {
+      const text = typeof headingObj === "string" ? headingObj : (headingObj.text || "");
+      const depth = typeof headingObj === "string" ? arguments[1] : (headingObj.depth || 1);
+      const slug = text
+        .toLowerCase()
+        .replace(/<[^>]*>/g, "")
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .trim();
+      return `<h${depth} id="${MarkdownRenderer._escapeAttr(slug)}">${text}</h${depth}>`;
+    };
+
     renderer.code = function (codeObj) {
       // marked v12 passes an object { text, lang, escaped }
       const text = typeof codeObj === "string" ? codeObj : (codeObj.text || codeObj);
@@ -87,6 +101,8 @@ const MarkdownRenderer = {
       ADD_TAGS: ["pre", "code", "img", "mark"],
       ADD_ATTR: [
         "class",
+        "id",
+        "href",
         "data-comment-id",
         "data-diagram-src",
         "loading",
