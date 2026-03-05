@@ -9,6 +9,7 @@ const Chat = {
   _panel: null,
   _isOpen: false,
   _isLoading: false,
+  _docMap: [], // [{title, slug}] -- cached for linking
 
   /**
    * Initialize the chat UI: floating button + panel.
@@ -109,8 +110,11 @@ const Chat = {
     this._showTyping();
 
     try {
-      // Build context from all user documents
+      // Build context from all user documents (also caches doc map)
       const context = await this._buildContext();
+
+      // Build the doc list for the system prompt
+      const docListStr = this._docMap.map((d) => `"${d.title}"`).join(", ");
 
       // Build messages for the LLM
       const systemPrompt = `You are a helpful assistant that answers questions based on the user's markdown documents.
@@ -120,7 +124,8 @@ ${context}
 
 Instructions:
 - Answer the user's question based ONLY on the content of these documents.
-- If the answer is found in a specific document, mention the document title.
+- When referencing a document, always use its EXACT title wrapped in double quotes, e.g. "Document Title". This is critical for generating links.
+- Available documents: ${docListStr}
 - If the information is not in any document, say so clearly.
 - Keep answers concise and direct.
 - You can quote relevant sections from the documents.
@@ -162,10 +167,12 @@ Instructions:
 
   /**
    * Build context string from all user documents.
-   * Truncates each doc to keep total context manageable.
+   * Also caches title->slug mapping for doc links.
    */
   async _buildContext() {
     const docs = await DocumentsDB.getAll();
+    this._docMap = docs.map((d) => ({ title: d.title, slug: d.slug }));
+
     if (docs.length === 0) {
       return "(No documents found. The user has not uploaded any markdown files yet.)";
     }
@@ -219,6 +226,7 @@ Instructions:
 
   /**
    * Append a message bubble to the chat UI.
+   * For assistant messages, also injects clickable doc links.
    */
   _appendMessage(role, content) {
     const container = document.getElementById("chat-messages");
@@ -230,16 +238,56 @@ Instructions:
 
     if (role === "assistant") {
       // Render markdown in assistant responses
-      const html = typeof marked !== "undefined"
+      let html = typeof marked !== "undefined"
         ? DOMPurify.sanitize(marked.parse(content))
         : this._escapeHtml(content);
+
       bubble.innerHTML = html;
+
+      // Find mentioned documents and add link chips
+      const mentioned = this._findMentionedDocs(content);
+      if (mentioned.length > 0) {
+        const linksDiv = document.createElement("div");
+        linksDiv.className = "chat-doc-links";
+        for (const doc of mentioned) {
+          const chip = document.createElement("a");
+          chip.className = "chat-doc-link";
+          chip.href = `#/doc/${doc.slug}`;
+          chip.textContent = doc.title;
+          chip.title = `Open "${doc.title}"`;
+          chip.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.close();
+            window.location.hash = `#/doc/${doc.slug}`;
+          });
+          linksDiv.appendChild(chip);
+        }
+        bubble.appendChild(linksDiv);
+      }
     } else {
       bubble.textContent = content;
     }
 
     container.appendChild(bubble);
     container.scrollTop = container.scrollHeight;
+  },
+
+  /**
+   * Find which documents are mentioned in an answer by title.
+   * Matches exact title in quotes or as a substring.
+   */
+  _findMentionedDocs(text) {
+    const mentioned = [];
+    const seen = new Set();
+    for (const doc of this._docMap) {
+      if (seen.has(doc.slug)) continue;
+      // Check for title in quotes (LLM format) or as plain text
+      if (text.includes(`"${doc.title}"`) || text.includes(doc.title)) {
+        mentioned.push(doc);
+        seen.add(doc.slug);
+      }
+    }
+    return mentioned;
   },
 
   _showTyping() {
