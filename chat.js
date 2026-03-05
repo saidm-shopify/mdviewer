@@ -138,6 +138,7 @@ Instructions:
       let answer;
       if (typeof quick !== "undefined" && quick.ai && quick.ai.chat) {
         const response = await quick.ai.chat(messagesForApi, {
+          model: "gpt-4o",
           temperature: 0.3,
           max_tokens: 1000,
         });
